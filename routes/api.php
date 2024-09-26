@@ -17,4 +17,4 @@ Route::get('/apple', function (Request $request) {
 Route::get('/login', [AuthController::class, 'login'])->middleware(Logger::class);
 
 
-Route::get('/token', [AuthController::class, 'index'])->middleware(Logger::class);
+Route::get('/token', [AuthController::class, 'callback'])->middleware(Logger::class);
