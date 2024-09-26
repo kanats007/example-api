@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\domain\JwtGenerator;
+use App\domain\JwtPerser;
+use App\domain\JwtValidator;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -12,7 +15,7 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function index(Request $request): RedirectResponse|JsonResponse
+    public function callback(Request $request): RedirectResponse|JsonResponse
     {
         $state = $request->cookie('state');
         // stateが一致しない場合はエラー
@@ -29,8 +32,25 @@ class AuthController extends Controller
             'client_id' => config('keycloak.client_id'),
             'redirect_uri' => config('keycloak.redirect_uri'),
         ]);
+
+        $id_token = JwtPerser::parse($response->object()->id_token);
+        $jwtValidator = new JwtValidator(
+            config('keycloak.url') . '/realms/' . config('keycloak.realm'),
+            config('keycloak.client_id'),
+            base_path('storage/jwt/keycloak/publickey.pem'),
+        );
+        $jwtValidator->validate($id_token);
+
+        $token = JwtGenerator::generateToken(
+            base_path('storage/jwt/id_ed25519'),
+            $id_token->claims()->get('sub'),
+            $id_token->claims()->get('exp'),
+        );
+
         if ($response->ok()) {
-            return redirect(config('keycloak.frontend_url') . "#id_token={$response->object()->id_token}")->withoutCookie('state');
+            return redirect(
+                config('keycloak.frontend_url') . "#token={$token->toString()}"
+            )->withoutCookie('state');
         } else {
             return response()->json($response->object(), $response->status(), [])->withoutCookie('state');
         }
