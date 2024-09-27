@@ -5,24 +5,24 @@ namespace App\domain;
 
 use DateTimeImmutable;
 use Godruoyi\Snowflake\Sonyflake;
-use Lcobucci\JWT\Encoding\ChainedFormatter;
-use Lcobucci\JWT\Encoding\JoseEncoder;
+use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Hmac\Sha256;
-use Lcobucci\JWT\Token\Builder;
-use Lcobucci\JWT\UnencryptedToken;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Lcobucci\JWT\Token;
 
 class JwtGenerator {
 
-    public static function generateToken(string $keyPath, string $sub, DateTimeImmutable $expiresAt): UnencryptedToken
+    public static function generateToken(string $privateKeyPath, string $publicKeyPath, string $sub, DateTimeImmutable $expiresAt): Token
     {
-        $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::default()));
-        $algorithm    = new Sha256();
-        $signingKey   = InMemory::plainText($keyPath);
+        $config = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::file($privateKeyPath),
+            InMemory::file($publicKeyPath),
+        );
 
         $now   = new DateTimeImmutable();
 
-        return $tokenBuilder
+        return $config->builder()
             // Configures the issuer (iss claim)
             ->issuedBy(config('app.name'))
             // Configures the audience (aud claim)
@@ -38,7 +38,7 @@ class JwtGenerator {
             // Configures the expiration time of the token (exp claim)
             ->expiresAt($expiresAt)
             // Builds a new token
-            ->getToken($algorithm, $signingKey);
+            ->getToken($config->signer(), $config->signingKey());
     }
 }
 
