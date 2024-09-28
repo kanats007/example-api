@@ -19,18 +19,18 @@ class Logger
     {
         $requestId = uniqid('req-', false);
 
-        Log::debug($requestId . ':' . $request->method() . ':' . $request->fullUrl(), [
+        Log::debug('BEGIN: ' . $requestId . ': ' . $request->method() . ': ' . $request->fullUrl(), [
             'user' => $request->user()?->id,
-            // 'headers' => $request->headers->all(),
+            'headers' => $request->headers->all(),
             'body' => $request->all(),
         ]);
 
         $response = $next($request);
 
         if (get_class($response) === JsonResponse::class) {
-            Log::debug($requestId . ':' . $request->method() . ':' . $request->fullUrl(), [
+            Log::debug('END:   ' . $requestId . ': ' . $request->method() . ': ' . $request->fullUrl(), [
                 'status' => $response->status(),
-                // 'headers' => $response->headers->all(),
+                'headers' => $response->headers->all(),
                 'body' => $response->getData(true)
             ]);
         }
