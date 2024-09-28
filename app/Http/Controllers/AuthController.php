@@ -33,19 +33,18 @@ class AuthController extends Controller
             'redirect_uri' => config('keycloak.redirect_uri'),
         ]);
 
-        $id_token = JwtPerser::parse($response->object()->id_token);
+        $idToken = JwtPerser::parse($response->object()->id_token);
         $jwtValidator = new JwtValidator(
             config('keycloak.url') . '/realms/' . config('keycloak.realm'),
             config('keycloak.client_id'),
             base_path('storage/jwt/keycloak/publickey.pem'),
         );
-        $jwtValidator->validate($id_token);
+        $jwtValidator->validate($idToken->toString());
 
         $token = JwtGenerator::generateToken(
             base_path('storage/jwt/rsa256.key'),
             base_path('storage/jwt/rsa256.pub'),
-            $id_token->claims()->get('sub'),
-            $id_token->claims()->get('exp'),
+            $idToken,
         );
 
         if ($response->ok()) {
@@ -79,5 +78,11 @@ class AuthController extends Controller
             HttpResponse::HTTP_OK,
             []
         )->cookie($cookie);
+    }
+
+
+    public function user(): JsonResponse
+    {
+        return response()->json(['name' => 'gojo.satoru'], HttpResponse::HTTP_OK, []);
     }
 }

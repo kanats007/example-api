@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Middleware\Authentication;
 use App\Http\Middleware\Logger;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,5 +17,6 @@ Route::get('/apple', function (Request $request) {
 
 Route::get('/login', [AuthController::class, 'login'])->middleware(Logger::class);
 
+Route::get('/user', [AuthController::class, 'user'])->middleware(Logger::class)->middleware(Authentication::class);
 
 Route::get('/token', [AuthController::class, 'callback'])->middleware(Logger::class);
