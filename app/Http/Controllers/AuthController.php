@@ -42,21 +42,22 @@ class AuthController extends Controller
         $jwtValidator->validate($id_token);
 
         $token = JwtGenerator::generateToken(
-            base_path('storage/jwt/id_ed25519'),
+            base_path('storage/jwt/rsa256.key'),
+            base_path('storage/jwt/rsa256.pub'),
             $id_token->claims()->get('sub'),
             $id_token->claims()->get('exp'),
         );
 
         if ($response->ok()) {
             return redirect(
-                config('keycloak.frontend_url') . "#token={$token->toString()}"
+                config('keycloak.frontend_url') . "/token#{$token->toString()}"
             )->withoutCookie('state');
         } else {
             return response()->json($response->object(), $response->status(), [])->withoutCookie('state');
         }
     }
 
-    public function login(): RedirectResponse
+    public function login(): JsonResponse
     {
         $clientId = config('keycloak.client_id');
         $redirect_uri = config('keycloak.redirect_uri');
@@ -64,13 +65,19 @@ class AuthController extends Controller
         $realm = config('keycloak.realm');
         $state = Str::random(19);
         $cookie = cookie('state', $state, 5);
-        return redirect(
-            "{$url}/realms/{$realm}/protocol/openid-connect/auth"
-            . "?scope=openid"
-            . "&response_type=code"
-            . "&client_id={$clientId}"
-            . "&state={$state}"
-            . "&redirect_uri={$redirect_uri}"
+
+        return response()->json(
+            [
+                'redirectUrl' =>
+                    "{$url}/realms/{$realm}/protocol/openid-connect/auth"
+                    . "?scope=openid"
+                    . "&response_type=code"
+                    . "&client_id={$clientId}"
+                    . "&state={$state}"
+                    . "&redirect_uri={$redirect_uri}"
+            ],
+            HttpResponse::HTTP_OK,
+            []
         )->cookie($cookie);
     }
 }
