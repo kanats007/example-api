@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace App\domain;
 
+use App\domain\Exceptions\UnAuthorizedException;
+use Exception;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
-use Lcobucci\JWT\Token;
 use Lcobucci\JWT\Validation\Constraint\LooseValidAt;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
@@ -36,12 +37,17 @@ class JwtValidator {
         $this->looseValidAt = new LooseValidAt((new NativeClock()));
     }
 
-    public function validate(Token $token): void
+    public function validate(string $token): void
     {
-        $this->validator->assert($token, $this->signedWith);
-        $this->validator->assert($token, $this->permittedFor); // aud
-        $this->validator->assert($token, $this->issuedBy); // iss
-        $this->validator->assert($token, $this->looseValidAt); // exp
+        try {
+            $jwt = JwtPerser::parse($token);
+            $this->validator->assert($jwt, $this->signedWith);
+            $this->validator->assert($jwt, $this->permittedFor); // aud
+            $this->validator->assert($jwt, $this->issuedBy); // iss
+            $this->validator->assert($jwt, $this->looseValidAt); // exp
+        } catch (Exception $e) {
+            throw new UnAuthorizedException($e->getMessage());
+        }
     }
 }
 
