@@ -16,6 +16,7 @@ Route::get('/apple', function (Request $request) {
 })->middleware(Logger::class);
 
 Route::get('/login', [AuthController::class, 'login'])->middleware(Logger::class);
+Route::get('/logout', [AuthController::class, 'logout'])->middleware(Logger::class);
 
 Route::get('/user', [AuthController::class, 'user'])->middleware(Logger::class)->middleware(Authentication::class);
 

@@ -80,6 +80,18 @@ class AuthController extends Controller
         )->cookie($cookie);
     }
 
+    public function logout(): JsonResponse
+    {
+        $url = config('keycloak.url');
+        $realm = config('keycloak.realm');
+        $clientId = config('keycloak.client_id');
+        $frontendUrl = config('keycloak.frontend_url');
+        return response()->json(
+            ['redirectUrl' => "{$url}/realms/{$realm}/protocol/openid-connect/logout?post_logout_redirect_uri={$frontendUrl}/login&client_id={$clientId}"],
+            HttpResponse::HTTP_OK,
+            []
+        );
+    }
 
     public function user(): JsonResponse
     {
