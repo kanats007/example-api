@@ -9,10 +9,11 @@ use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Lcobucci\JWT\Token;
+use Lcobucci\JWT\UnencryptedToken;
 
 class JwtGenerator {
 
-    public static function generateToken(string $privateKeyPath, string $publicKeyPath, string $sub, DateTimeImmutable $expiresAt): Token
+    public static function generateToken(string $privateKeyPath, string $publicKeyPath, UnencryptedToken $token): Token
     {
         $config = Configuration::forAsymmetricSigner(
             new Sha256(),
@@ -28,7 +29,7 @@ class JwtGenerator {
             // Configures the audience (aud claim)
             ->permittedFor(config('app.url'))
             // Configures the subject of the token (sub claim)
-            ->relatedTo($sub)
+            ->relatedTo($token->claims()->get('sub'))
             // Configures the id (jti claim)
             ->identifiedBy((new Sonyflake())->id())
             // Configures the time that the token was issue (iat claim)
@@ -36,7 +37,7 @@ class JwtGenerator {
             // Configures the time that the token can be used (nbf claim)
             ->canOnlyBeUsedAfter($now)
             // Configures the expiration time of the token (exp claim)
-            ->expiresAt($expiresAt)
+            ->expiresAt($token->claims()->get('exp'))
             // Builds a new token
             ->getToken($config->signer(), $config->signingKey());
     }
