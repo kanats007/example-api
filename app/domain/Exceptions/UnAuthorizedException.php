@@ -12,15 +12,7 @@ class UnAuthorizedException extends Exception
 
     public function __construct(string $message = '')
     {
-        parent::__construct();
-    }
-
-    /**
-     * 例外をレポート
-     */
-    public function report(): void
-    {
-        // ...
+        parent::__construct($message);
     }
 
     /**
