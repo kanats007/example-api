@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\domain;
 
-use App\domain\Exceptions\UnAuthorizedException;
+use App\domain\Exceptions\JwtException;
 use Exception;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
@@ -46,7 +46,7 @@ class JwtValidator {
             $this->validator->assert($jwt, $this->issuedBy); // iss
             $this->validator->assert($jwt, $this->looseValidAt); // exp
         } catch (Exception $e) {
-            throw new UnAuthorizedException($e->getMessage());
+            throw new JwtException($e->getMessage());
         }
     }
 }
