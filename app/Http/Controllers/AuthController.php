@@ -41,6 +41,11 @@ class AuthController extends Controller
         );
         $jwtValidator->validate($idToken->toString());
 
+        // TODO:IDトークン、アクセストークン、リフレッシュトークンをDBに保存する（別サービスのAPIを呼び出せるようにするため）
+
+        // JWTの作成
+        // TODO:本アプリ用のユーザーテーブルを用意してIDトークンのSubと紐付けてユーザーIDを発行＆保存し、自前JWTには本アプリで発行したIDを入れる
+        // IDを暗号化する
         $token = JwtGenerator::generateToken(
             base_path('storage/jwt/rsa256.key'),
             base_path('storage/jwt/rsa256.pub'),
