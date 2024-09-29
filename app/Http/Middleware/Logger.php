@@ -19,8 +19,7 @@ class Logger
     {
         $requestId = uniqid('req-', false);
 
-        Log::debug('BEGIN: ' . $requestId . ': ' . $request->method() . ': ' . $request->fullUrl(), [
-            'user' => $request->user()?->id,
+        Log::debug('BEGIN ' . $requestId . ' ' . $request->method() . ':' . $request->path(), [
             'headers' => $request->headers->all(),
             'body' => $request->all(),
         ]);
@@ -28,7 +27,8 @@ class Logger
         $response = $next($request);
 
         if (get_class($response) === JsonResponse::class) {
-            Log::debug('END:   ' . $requestId . ': ' . $request->method() . ': ' . $request->fullUrl(), [
+            /** @var JsonResponse $response */
+            Log::debug('END   ' . $requestId . ' ' . $request->method() . ':' . $request->path(), [
                 'status' => $response->status(),
                 'headers' => $response->headers->all(),
                 'body' => $response->getData(true)
