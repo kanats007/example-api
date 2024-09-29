@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\domain\Exceptions\UnAuthorizedException;
 use App\domain\JwtValidator;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,7 +23,11 @@ class Authentication
             config('app.url'),
             base_path('storage/jwt/rsa256.pub'),
         );
-        $jwtValidator->validate($request->bearerToken());
+        try {
+            $jwtValidator->validate($request->bearerToken());
+        } catch (Exception $e) {
+            throw new UnAuthorizedException($e->getMessage());
+        }
         return $next($request);
     }
 }
