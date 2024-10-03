@@ -21,6 +21,9 @@ class AuthController extends Controller
         // stateが一致しない場合はエラー
         if ($state !== $request->state) {
             return response()->json(['errorMessage' => ['state does not match.']], HttpResponse::HTTP_UNAUTHORIZED);
+            // return redirect(
+            //     config('keycloak.frontend_url') . "/login"
+            // )->withoutCookie('state');
         }
 
         $code = $request->code;
@@ -37,6 +40,7 @@ class AuthController extends Controller
         $jwtValidator = new JwtValidator(
             config('keycloak.url') . '/realms/' . config('keycloak.realm'),
             config('keycloak.client_id'),
+            // TODO:keycloakの公開鍵はファイルではなくAPI（/realms/{realm}）で取得する
             base_path('storage/jwt/keycloak/publickey.pem'),
         );
         $jwtValidator->validate($idToken->toString());
