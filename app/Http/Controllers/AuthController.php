@@ -96,7 +96,7 @@ class AuthController extends Controller
         $clientId = config('keycloak.client_id');
         $frontendUrl = config('keycloak.frontend_url');
         return response()->json(
-            ['redirectUrl' => "{$url}/realms/{$realm}/protocol/openid-connect/logout?post_logout_redirect_uri={$frontendUrl}/login&client_id={$clientId}"],
+            ['redirectUrl' => "{$url}/realms/{$realm}/protocol/openid-connect/logout?post_logout_redirect_uri={$frontendUrl}/logout&client_id={$clientId}"],
             HttpResponse::HTTP_OK,
             []
         );
