@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
-
+use Lcobucci\JWT\Signer\Key\InMemory;
 
 class AuthController extends Controller
 {
@@ -41,7 +41,7 @@ class AuthController extends Controller
             config('keycloak.url') . '/realms/' . config('keycloak.realm'),
             config('keycloak.client_id'),
             // TODO:keycloakの公開鍵はファイルではなくAPI（/realms/{realm}）で取得する
-            base_path('storage/jwt/keycloak/publickey.pem'),
+            InMemory::file(base_path('storage/jwt/keycloak/publickey.pem')),
         );
         $jwtValidator->validate($idToken->toString());
 

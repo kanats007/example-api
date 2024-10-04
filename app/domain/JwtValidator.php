@@ -25,12 +25,12 @@ class JwtValidator {
     public function __construct(
         string $iss,
         string $aud,
-        string $publickeyPath,
+        InMemory $publickey,
     ) {
         $this->validator = new Validator();
         $this->signedWith = new SignedWith(
             new Sha256(),
-            InMemory::file($publickeyPath),
+            $publickey,
         );
         $this->permittedFor = new PermittedFor($aud);
         $this->issuedBy = new IssuedBy($iss);

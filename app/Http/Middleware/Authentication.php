@@ -7,6 +7,7 @@ use App\domain\JwtValidator;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
+use Lcobucci\JWT\Signer\Key\InMemory;
 use Symfony\Component\HttpFoundation\Response;
 
 class Authentication
@@ -21,7 +22,7 @@ class Authentication
         $jwtValidator = new JwtValidator(
             config('app.name'),
             config('app.url'),
-            base_path('storage/jwt/rsa256.pub'),
+            InMemory::file(base_path('storage/jwt/rsa256.pub')),
         );
         try {
             $jwtValidator->validate($request->bearerToken());
