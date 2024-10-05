@@ -13,7 +13,12 @@ use Lcobucci\JWT\UnencryptedToken;
 
 class JwtGenerator {
 
-    public static function generateToken(string $privateKeyPath, string $publicKeyPath, UnencryptedToken $token): Token
+    public static function generateToken(
+        string $privateKeyPath,
+        string $publicKeyPath,
+        UnencryptedToken $token,
+        string $userId,
+    ): Token
     {
         $config = Configuration::forAsymmetricSigner(
             new Sha256(),
@@ -29,7 +34,7 @@ class JwtGenerator {
             // Configures the audience (aud claim)
             ->permittedFor(config('app.url'))
             // Configures the subject of the token (sub claim)
-            ->relatedTo($token->claims()->get('sub'))
+            ->relatedTo($userId)
             // Configures the id (jti claim)
             ->identifiedBy((new Sonyflake())->id())
             // Configures the time that the token was issue (iat claim)

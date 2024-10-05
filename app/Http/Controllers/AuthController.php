@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\JwtGenerator;
 use App\Domain\JwtPerser;
 use App\Domain\JwtValidator;
+use App\Domain\Repository\UserRepository;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -15,6 +16,10 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly UserRepository $userRepository)
+    {
+    }
+
     public function callback(Request $request): RedirectResponse|JsonResponse
     {
         $state = $request->cookie('state');
@@ -44,12 +49,21 @@ class AuthController extends Controller
         // TODO:IDトークン、アクセストークン、リフレッシュトークンをDBに保存する（別サービスのAPIを呼び出せるようにするため）
 
         // JWTの作成
-        // TODO:本アプリ用のユーザーテーブルを用意してIDトークンのSubと紐付けてユーザーIDを発行＆保存し、自前JWTには本アプリで発行したIDを入れる
+        // 本アプリ用のユーザーテーブルを用意してIDトークンのSubと紐付けてユーザーIDを発行＆保存し、自前JWTには本アプリで発行したIDを入れる
+        $user = $this->userRepository->findBySub($idToken->claims()->get('sub'));
+        if ($user === null) {
+            $user = $this->userRepository->create(
+                $idToken->claims()->get('sub'),
+                $idToken->claims()->get('name'),
+                $idToken->claims()->get('email'),
+            );
+        }
         // IDを暗号化する
         $token = JwtGenerator::generateToken(
             base_path('storage/jwt/rsa256.key'),
             base_path('storage/jwt/rsa256.pub'),
             $idToken,
+            $user->user_id,
         );
 
         if ($response->ok()) {
