@@ -40,8 +40,7 @@ class AuthController extends Controller
         $jwtValidator = new JwtValidator(
             config('keycloak.url') . '/realms/' . config('keycloak.realm'),
             config('keycloak.client_id'),
-            // TODO:keycloakの公開鍵はファイルではなくAPI（/realms/{realm}）で取得する
-            InMemory::file(base_path('storage/jwt/keycloak/publickey.pem')),
+            InMemory::plainText($this->getKeycloakPublicKey()),
         );
         $jwtValidator->validate($idToken->toString());
 
@@ -105,5 +104,19 @@ class AuthController extends Controller
     public function user(): JsonResponse
     {
         return response()->json(['name' => 'gojo.satoru'], HttpResponse::HTTP_OK, []);
+    }
+
+    private function getKeycloakPublicKey(): string
+    {
+        $realm = config('keycloak.realm');
+        $hostname = config('keycloak.hostname');
+        $response = Http::get("{$hostname}/realms/{$realm}");
+        $publicKey = $response->object()->public_key;
+
+        // pem形式にする
+        $pem = "-----BEGIN PUBLIC KEY-----\n";
+        $pem .= $publicKey;
+        $pem .= "\n-----END PUBLIC KEY-----\n";
+        return $pem;
     }
 }
