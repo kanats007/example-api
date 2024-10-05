@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\domain;
+namespace App\Domain;
 
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Lcobucci\JWT\Token\Parser;

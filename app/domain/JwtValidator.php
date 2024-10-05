@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\domain;
+namespace App\Domain;
 
-use App\domain\Exceptions\JwtException;
+use App\Domain\Exceptions\JwtException;
 use Exception;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
