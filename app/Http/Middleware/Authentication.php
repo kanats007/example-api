@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use App\domain\Exceptions\UnAuthorizedException;
-use App\domain\JwtValidator;
+use App\Domain\Exceptions\UnAuthorizedException;
+use App\Domain\JwtValidator;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;

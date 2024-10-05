@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\domain\JwtGenerator;
-use App\domain\JwtPerser;
-use App\domain\JwtValidator;
+use App\Domain\JwtGenerator;
+use App\Domain\JwtPerser;
+use App\Domain\JwtValidator;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
