@@ -11,9 +11,14 @@ use Illuminate\Support\Str;
 
 class EloquentUserRepository implements UserRepository
 {
-    public function findBySub(string $sub): ?User
+    public function findByOidcUserId(string $sub): ?User
     {
         return User::whereOidcUserId($sub)->first();
+    }
+
+    public function findByUserId(string $userId): ?User
+    {
+        return User::whereUserId($userId)->first();
     }
 
     public function create(

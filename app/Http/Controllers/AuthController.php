@@ -50,7 +50,7 @@ class AuthController extends Controller
 
         // JWTの作成
         // 本アプリ用のユーザーテーブルを用意してIDトークンのSubと紐付けてユーザーIDを発行＆保存し、自前JWTには本アプリで発行したIDを入れる
-        $user = $this->userRepository->findBySub($idToken->claims()->get('sub'));
+        $user = $this->userRepository->findByOidcUserId($idToken->claims()->get('sub'));
         if ($user === null) {
             $user = $this->userRepository->create(
                 $idToken->claims()->get('sub'),
@@ -112,9 +112,11 @@ class AuthController extends Controller
         );
     }
 
-    public function user(): JsonResponse
+    public function user(Request $request): JsonResponse
     {
-        return response()->json(['name' => 'gojo.satoru'], HttpResponse::HTTP_OK, []);
+        $token = JwtPerser::parse($request->bearerToken());
+        $user = $this->userRepository->findByUserId($token->claims()->get('sub'));
+        return response()->json(['name' => $user->name, 'email' => $user->email], HttpResponse::HTTP_OK, []);
     }
 
     private function getKeycloakPublicKey(): string

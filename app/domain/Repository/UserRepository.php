@@ -7,7 +7,9 @@ use App\Models\User;
 
 interface UserRepository
 {
-    public function findBySub(string $sub): ?User;
+    public function findByOidcUserId(string $sub): ?User;
+
+    public function findByUserId(string $userId): ?User;
 
     public function create(
         string $sub,
