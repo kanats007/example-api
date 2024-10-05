@@ -2,12 +2,23 @@
 
 namespace App\Providers;
 
+use App\Domain\Repository\UserRepository;
+use App\Infrastructure\Repository\EloquentUserRepository;
 use Illuminate\Support\ServiceProvider;
 use Godruoyi\Snowflake\Snowflake;
 use Godruoyi\Snowflake\LaravelSequenceResolver;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * 登録する必要のある全コンテナ結合
+     *
+     * @var array
+     */
+    public $bindings = [
+        UserRepository::class => EloquentUserRepository::class,
+    ];
+
     /**
      * Register any application services.
      */
