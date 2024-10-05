@@ -21,9 +21,6 @@ class AuthController extends Controller
         // stateが一致しない場合はエラー
         if ($state !== $request->state) {
             return response()->json(['errorMessage' => ['state does not match.']], HttpResponse::HTTP_UNAUTHORIZED);
-            // return redirect(
-            //     config('keycloak.frontend_url') . "/login"
-            // )->withoutCookie('state');
         }
 
         $code = $request->code;
