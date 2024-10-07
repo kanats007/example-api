@@ -116,7 +116,8 @@ class AuthController extends Controller
     {
         $token = JwtPerser::parse($request->bearerToken());
         $user = $this->userRepository->findByUserId($token->claims()->get('sub'));
-        return response()->json(['name' => $user->name, 'email' => $user->email], HttpResponse::HTTP_OK, []);
+        $data = $user !== null ? ['name' => $user->name, 'email' => $user->email] : [];
+        return response()->json($data, HttpResponse::HTTP_OK, []);
     }
 
     private function getKeycloakPublicKey(): string
