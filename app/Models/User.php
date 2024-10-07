@@ -4,11 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 /**
- * 
  *
  * @property int $id
  * @property string $oidc_user_id
@@ -32,7 +31,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserId($value)
  * @mixin \Eloquent
  */
-class User extends Authenticatable
+class User extends Model
 {
     use HasFactory, Notifiable;
 
