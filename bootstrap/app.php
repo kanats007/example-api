@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,5 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // 管理外のExceptionが発生した場合は500エラーでレスポンス
+        $exceptions->render(function (Exception $exception) {
+            return response()->json([$exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR, [], JSON_UNESCAPED_UNICODE);
+        });
     })->create();
