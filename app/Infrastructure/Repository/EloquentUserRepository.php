@@ -37,8 +37,8 @@ class EloquentUserRepository implements UserRepository
         try {
             DB::beginTransaction();
             $user->save();
-            return $user;
             DB::commit();
+            return $user;
         } catch (Exception $e) {
             DB::rollBack();
 
