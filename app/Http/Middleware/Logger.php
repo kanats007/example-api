@@ -29,9 +29,15 @@ class Logger
         if (get_class($response) === JsonResponse::class) {
             /** @var JsonResponse $response */
             Log::debug('END   ' . $requestId . ' ' . $request->method() . ':' . $request->path(), [
-                'status' => $response->status(),
+                'status' => $response->getStatusCode(),
                 'headers' => $response->headers->all(),
                 'body' => $response->getData(true)
+            ]);
+        } else {
+            Log::debug('END   ' . $requestId . ' ' . $request->method() . ':' . $request->path(), [
+                'status' => $response->getStatusCode(),
+                'headers' => $response->headers->all(),
+                'body' => $response->getContent()
             ]);
         }
 
