@@ -16,7 +16,19 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly UserRepository $userRepository) {}
+    private readonly string $realm;
+    private readonly string $hostname;
+    private readonly string $keyCloakUrl;
+    private readonly string $clientId;
+    private readonly string $frontendUrl;
+    public function __construct(private readonly UserRepository $userRepository)
+    {
+        $this->realm = config('keycloak.realm');
+        $this->hostname = config('keycloak.hostname');;
+        $this->keyCloakUrl = config('keycloak.url');
+        $this->clientId = config('keycloak.client_id');
+        $this->frontendUrl = config('keycloak.frontend_url');
+    }
 
     public function callback(Request $request): RedirectResponse|JsonResponse
     {
@@ -27,19 +39,17 @@ class AuthController extends Controller
         }
 
         $code = $request->code;
-        $realm = config('keycloak.realm');
-        $hostname = config('keycloak.hostname');
-        $response = Http::asForm()->post("{$hostname}/realms/{$realm}/protocol/openid-connect/token", [
+        $response = Http::asForm()->post("{$this->hostname}/realms/{$this->realm}/protocol/openid-connect/token", [
             'code' => $code,
             'grant_type' => 'authorization_code',
-            'client_id' => config('keycloak.client_id'),
-            'redirect_uri' => config('keycloak.redirect_uri'),
+            'client_id' => $this->clientId,
+            'redirect_uri' => $this->keyCloakUrl,
         ]);
 
         $idToken = JwtPerser::parse($response->object()->id_token);
         $jwtValidator = new JwtValidator(
-            config('keycloak.url') . '/realms/' . config('keycloak.realm'),
-            config('keycloak.client_id'),
+            $this->keyCloakUrl . '/realms/' . $this->hostname,
+            $this->clientId,
             InMemory::plainText($this->getKeycloakPublicKey()),
         );
         $jwtValidator->validate($idToken->toString());
@@ -76,7 +86,7 @@ class AuthController extends Controller
 
         if ($response->ok()) {
             return redirect(
-                config('keycloak.frontend_url') . "/token#{$token->toString()}"
+                $this->keyCloakUrl . "/token#{$token->toString()}"
             )->withoutCookie('state');
         } else {
             return response()->json($response->object(), $response->status(), [])->withoutCookie('state');
@@ -85,20 +95,17 @@ class AuthController extends Controller
 
     public function login(): JsonResponse
     {
-        $clientId = config('keycloak.client_id');
         $redirect_uri = config('keycloak.redirect_uri');
-        $url = config('keycloak.url');
-        $realm = config('keycloak.realm');
         $state = Str::random(19);
         $cookie = cookie('state', $state, 5);
 
         return response()->json(
             [
                 'redirectUrl' =>
-                "{$url}/realms/{$realm}/protocol/openid-connect/auth"
+                "{$this->keyCloakUrl}/realms/{$this->realm}/protocol/openid-connect/auth"
                     . "?scope=openid"
                     . "&response_type=code"
-                    . "&client_id={$clientId}"
+                    . "&client_id={$this->clientId}"
                     . "&state={$state}"
                     . "&redirect_uri={$redirect_uri}"
             ],
@@ -109,12 +116,8 @@ class AuthController extends Controller
 
     public function logout(): JsonResponse
     {
-        $url = config('keycloak.url');
-        $realm = config('keycloak.realm');
-        $clientId = config('keycloak.client_id');
-        $frontendUrl = config('keycloak.frontend_url');
         return response()->json(
-            ['redirectUrl' => "{$url}/realms/{$realm}/protocol/openid-connect/logout?post_logout_redirect_uri={$frontendUrl}/logout&client_id={$clientId}"],
+            ['redirectUrl' => "{$this->keyCloakUrl}/realms/{$this->realm}/protocol/openid-connect/logout?post_logout_redirect_uri={$this->frontendUrl}/logout&client_id={$this->clientId}"],
             HttpResponse::HTTP_OK,
             []
         );
@@ -130,9 +133,7 @@ class AuthController extends Controller
 
     private function getKeycloakPublicKey(): string
     {
-        $realm = config('keycloak.realm');
-        $hostname = config('keycloak.hostname');
-        $response = Http::get("{$hostname}/realms/{$realm}");
+        $response = Http::get("{$this->hostname}/realms/{$this->realm}");
         $publicKey = $response->object()->public_key;
 
         // pem形式にする
