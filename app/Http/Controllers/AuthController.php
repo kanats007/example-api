@@ -21,6 +21,7 @@ class AuthController extends Controller
     private readonly string $keyCloakUrl;
     private readonly string $clientId;
     private readonly string $frontendUrl;
+    private readonly string $redirectUri;
     public function __construct(private readonly UserRepository $userRepository)
     {
         $this->realm = config('keycloak.realm');
@@ -28,6 +29,7 @@ class AuthController extends Controller
         $this->keyCloakUrl = config('keycloak.url');
         $this->clientId = config('keycloak.client_id');
         $this->frontendUrl = config('keycloak.frontend_url');
+        $this->redirectUri = config('keycloak.redirect_uri');
     }
 
     public function callback(Request $request): RedirectResponse|JsonResponse
@@ -43,12 +45,12 @@ class AuthController extends Controller
             'code' => $code,
             'grant_type' => 'authorization_code',
             'client_id' => $this->clientId,
-            'redirect_uri' => $this->keyCloakUrl,
+            'redirect_uri' => $this->redirectUri,
         ]);
 
         $idToken = JwtPerser::parse($response->object()->id_token);
         $jwtValidator = new JwtValidator(
-            $this->keyCloakUrl . '/realms/' . $this->hostname,
+            $this->keyCloakUrl . '/realms/' . $this->realm,
             $this->clientId,
             InMemory::plainText($this->getKeycloakPublicKey()),
         );
@@ -86,7 +88,7 @@ class AuthController extends Controller
 
         if ($response->ok()) {
             return redirect(
-                $this->keyCloakUrl . "/token#{$token->toString()}"
+                $this->frontendUrl . "/token#{$token->toString()}"
             )->withoutCookie('state');
         } else {
             return response()->json($response->object(), $response->status(), [])->withoutCookie('state');
@@ -95,7 +97,6 @@ class AuthController extends Controller
 
     public function login(): JsonResponse
     {
-        $redirect_uri = config('keycloak.redirect_uri');
         $state = Str::random(19);
         $cookie = cookie('state', $state, 5);
 
@@ -107,7 +108,7 @@ class AuthController extends Controller
                     . "&response_type=code"
                     . "&client_id={$this->clientId}"
                     . "&state={$state}"
-                    . "&redirect_uri={$redirect_uri}"
+                    . "&redirect_uri={$this->redirectUri}"
             ],
             HttpResponse::HTTP_OK,
             []
