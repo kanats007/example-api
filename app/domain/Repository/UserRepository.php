@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Domain\Repository;
@@ -15,5 +16,15 @@ interface UserRepository
         string $sub,
         string $name = null,
         string $email = null,
+        string $idToken = null,
+        string $accessToken = null,
+        string $refreshToken = null,
     ): User;
+
+    public function updateToken(
+        string $userId,
+        string $idToken = null,
+        string $accessToken = null,
+        string $refreshToken = null,
+    ): ?User;
 }
