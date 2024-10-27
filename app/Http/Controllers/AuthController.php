@@ -16,9 +16,7 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly UserRepository $userRepository)
-    {
-    }
+    public function __construct(private readonly UserRepository $userRepository) {}
 
     public function callback(Request $request): RedirectResponse|JsonResponse
     {
@@ -56,6 +54,16 @@ class AuthController extends Controller
                 $idToken->claims()->get('sub'),
                 $idToken->claims()->get('name'),
                 $idToken->claims()->get('email'),
+                $idToken->toString(),
+                $response->object()->access_token,
+                $response->object()->refresh_token,
+            );
+        } else {
+            $this->userRepository->updateToken(
+                $user->user_id,
+                $idToken->toString(),
+                $response->object()->access_token,
+                $response->object()->refresh_token,
             );
         }
         // IDを暗号化する
@@ -87,7 +95,7 @@ class AuthController extends Controller
         return response()->json(
             [
                 'redirectUrl' =>
-                    "{$url}/realms/{$realm}/protocol/openid-connect/auth"
+                "{$url}/realms/{$realm}/protocol/openid-connect/auth"
                     . "?scope=openid"
                     . "&response_type=code"
                     . "&client_id={$clientId}"
