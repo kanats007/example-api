@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Lcobucci\JWT\Signer\Key\InMemory;
 
@@ -130,6 +131,26 @@ class AuthController extends Controller
         $user = $this->userRepository->findByUserId($token->claims()->get('sub'));
         $data = $user !== null ? ['name' => $user->name, 'email' => $user->email] : [];
         return response()->json($data, HttpResponse::HTTP_OK, []);
+    }
+
+
+    public function updateUser(Request $request): JsonResponse
+    {
+        $token = JwtPerser::parse($request->bearerToken());
+        $user = $this->userRepository->findByUserId($token->claims()->get('sub'));
+        if ($user === null) {
+            return response()->json([], HttpResponse::HTTP_NO_CONTENT, []);
+        }
+        $response = Http::withToken($user->access_token)
+            ->get("{$this->hostname}/realms/{$this->realm}/protocol/openid-connect/userinfo");
+
+        $this->userRepository->updateUser(
+            $user->user_id,
+            $response->object()->name,
+            $response->object()->email,
+        );
+
+        return response()->json(['name' => $response->object()->name, 'email' => $response->object()->email], $response->status(), []);
     }
 
     private function getKeycloakPublicKey(): string

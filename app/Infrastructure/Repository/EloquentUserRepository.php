@@ -75,4 +75,27 @@ class EloquentUserRepository implements UserRepository
             throw new Exception($e->getMessage());
         }
     }
+
+    public function updateUser(
+        string $userId,
+        string $name,
+        string $email
+    ): ?User {
+        $user = $this->findByUserId($userId);
+        if ($user === null) {
+            return null;
+        }
+        $user->name = $name;
+        $user->email = $email;
+
+        try {
+            DB::beginTransaction();
+            $user->save();
+            DB::commit();
+            return $user;
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw new Exception($e->getMessage());
+        }
+    }
 }

@@ -27,4 +27,10 @@ interface UserRepository
         string $accessToken = null,
         string $refreshToken = null,
     ): ?User;
+
+    public function updateUser(
+        string $userId,
+        string $name,
+        string $email
+    ): ?User;
 }
